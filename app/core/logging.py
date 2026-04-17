@@ -66,7 +66,6 @@ def logging_middleware(app):
     async def middleware(request, call_next):
         request_id = str(uuid.uuid4())
 
-        # Bind request-level context
         bind_context(
             request_id=request_id,
             path=request.url.path,
@@ -80,3 +79,13 @@ def logging_middleware(app):
             clear_context()
 
     return app
+
+
+def llm_retry_logger(retry_state):
+    if retry_state.attempt_number < 1:
+        loglevel = logging.INFO
+    else:
+        loglevel = logging.WARNING
+    logger.log(
+        loglevel, 'Retrying %s: attempt %s ended with: %s',
+        retry_state.fn, retry_state.attempt_number, retry_state.outcome)
